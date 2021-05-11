@@ -368,11 +368,13 @@ def delete(id):
     a=new.course_name
     b=delete_student.roll_no
     print(a)
-    shutil.rmtree("photo/"+str(a)+"_"+str(b),ignore_errors = True)
-    with open('embeddings/'+str(a)+'.dat',"rb") as f:
+    shutil.rmtree("static/photo/"+str(a)+"/"+str(b)+"jpg",ignore_errors = True)
+    
+    if os.path.isfile('static/embeddings/'+str(a)+'.dat'):
+        with open('static/embeddings/'+str(a)+'.dat',"rb") as f:
             encoded = pickle.load(f)
-    with open('embeddings/'+str(a)+'.dat', 'wb') as f1:
-            del encoded[str(b)]
+        with open('static/embeddings/'+str(a)+'.dat', 'wb') as f1:
+            del encoded[str(a)+"_"+str(b)]
             
             pickle.dump(encoded,f1)
     db.session.delete(delete_student)
@@ -395,8 +397,8 @@ def delete_courses(id):
     delete_course=Course.query.get(id)
     
     db.session.delete(delete_course)
-    print(delete_course.course_name)
-    os.remove('embeddings'+'/'+str(delete_course.course_name)+'.dat')
+    #print(delete_course.course_name)
+    os.remove('static/embeddings'+'/'+str(delete_course.course_name)+'.dat')
     shutil.rmtree(str(delete_course.course_name),ignore_errors = True)
     db.session.commit()
     flash("Course Deleted Sucessfully!!")
@@ -559,13 +561,14 @@ encoder_model = 'facenet_keras.h5'
 #detector=MTCNN()
 detector=MTCNN()
 face_encoder = load_model(encoder_model)
-directory='embeddings'
+directory='static/embeddings'
 encoded={}
 for filename in os.listdir(directory):
     if filename.endswith(".dat"):
-        with open('embeddings/'+str(filename),"rb") as f:
-            e= pickle.load(f)
-        encoded.update(e)
+        if os.path.isfile('static/embeddings/'+str(filename)):
+            with open('static/embeddings/'+str(filename),"rb") as f:
+                e= pickle.load(f)
+                encoded.update(e)
 
 def get_encode(face_encoder, face, size):
     face = normalize(face)
@@ -595,8 +598,9 @@ def mark_attendance_of_a_lec(a,t):
     sheet.write(0,2,str(t.hour)+":"+str(t.minute))
     row = 1
     col = 0
-    course=check_which_course(a)
+    
     if len(a)>0:
+        course=check_which_course(a)
         for person_name in encoded:
             print(person_name)
             #print(a)
@@ -612,7 +616,8 @@ def mark_attendance_of_a_lec(a,t):
     
                         sheet.write(row, col+1,     str(l[1]))
                         sheet.write(row,col+2,"P")
-                else:
+                if person_name not in a: 
+                    l=str(person_name).split('_')
                     if course==cou:
                         sheet.write(row, col,     str(l[0]))
     
@@ -621,7 +626,8 @@ def mark_attendance_of_a_lec(a,t):
                         
                 
                 row+=1
-        workbook.save(str(t.day)+"_"+str(t.month)+"_"+str(t.year)+"_"+str(t.hour)+":"+str(t.minute)+".xls")
+        #workbook.save("static/attendance/"+str(t.day)+"_"+str(t.month)+"_"+str(t.year)+"_"+str(t.hour)+":"+str(t.minute)+".xls")
+        workbook.save(os.path.join('static/attendance', str(t.day)+"_"+str(t.month)+"_"+str(t.year)+"_"+str(t.hour)+":"+str(t.minute)+".xls"))
         
         
         print("Marked attendance")
@@ -703,6 +709,7 @@ def program(flag):
                         distance = dist
                         if name not in present_candidates:
                             present_candidates.append(name)
+        print(present_candidates)
         if t.second==59:
             mark_attendance_of_a_lec(present_candidates,t)     
         if flag:

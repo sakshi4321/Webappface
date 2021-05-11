@@ -48,7 +48,7 @@ class Camera(object):
 
     def detect(self,frame):
         boxes,probs = Camera.detector.detect(frame)
-        print('checkkkkkkkkkkkkkkkkkkkkkk')
+        
         encodes=[]
 
 	       
@@ -94,9 +94,9 @@ class Camera(object):
         
         
         #print ("directory exists:" + str(path.exists('photo/' + str(name_f)+'_'+ str(name_l))))
-        if not os.path.exists('photo/'+str(name_f)):
-            os.makedirs('photo/'+str(name_f))
-        filename ='photo/'+str(name_f)+'/'+ str(name_l)+".jpg"
+        if not os.path.exists('static/photo/'+str(name_f)):
+            os.makedirs('static/photo/'+str(name_f))
+        filename ='static/photo/'+str(name_f)+'/'+ str(name_l)+".jpg"
 
         #encoded={}
         #filename = str(name_f)+'_'+ str(name_l)+'/'+timestamp +".jpg"
@@ -106,21 +106,21 @@ class Camera(object):
         """with open('embeddings/'+str(name_f)+'_'+str(name_l)+'.dat', 'wb') as f:
             print('done')
             pickle.dump(encode, f)"""
-        if os.path.isfile('embeddings/'+str(name_f)+'.dat'):
+        if os.path.exists('static/embeddings/'+str(name_f)+'.dat'):
             print("True")
-            with open('embeddings/'+str(name_f)+'.dat',"rb") as f:
+            with open('static/embeddings/'+str(name_f)+'.dat',"rb") as f:
                 encoded = pickle.load(f)
                 #print(obj)
 
 
 
-            with open('embeddings/'+str(name_f)+'.dat', 'wb') as f1:
+            with open('static/embeddings/'+str(name_f)+'.dat', 'wb') as f1:
             
                 encoded[str(name_f)+"_"+str(name_l)]=encode
                 pickle.dump(encoded,f1)
         else:
             encoded={}
-            with open('embeddings/'+str(name_f)+'.dat', 'wb') as f2:
+            with open('static/embeddings/'+str(name_f)+'.dat', 'wb') as f2:
             
                 encoded[str(name_f)+"_"+str(name_l)]=encode
                 pickle.dump(encoded,f2)
